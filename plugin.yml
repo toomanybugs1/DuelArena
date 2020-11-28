@@ -1,3 +1,20 @@
 name: DuelArena
 main: DuelArena.DuelArena
 version: 0.0.1-SNAPSHOT
+author: toomanybugs
+commands:
+   challenge:
+      description: Challenge the player to a duel.
+      usage: /challenge [player]
+      permission: DuelArena.challenge
+      permission-message: You don't have permission to challenge other players.
+   accept:
+      description: Accept a challenge from a player.
+      usage: /accept
+      permission: DuelArena.challenge
+      permission-message: You don't have permission to accept challenges.
+   decline:
+      description: Decline a challenge from a player.
+      usage: /decline
+      permission: DualArena.challenge
+      permission: You don't have permission to decline challenges.
