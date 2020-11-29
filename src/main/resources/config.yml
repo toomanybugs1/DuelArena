@@ -13,9 +13,10 @@ pos2:
    yaw: 0
    
 items:
-   - iron_sword
-   - cooked_beef
+   - iron_sword 1
+   - cooked_beef 5
    
-armor:
-   - iron_chestplate
-   - iron_helmet
+helmet: iron_helmet
+chestplate: iron_chestplate
+leggings: iron_leggings
+boots: iron_boots

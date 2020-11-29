@@ -37,19 +37,14 @@ public final class DuelListener implements Listener {
 		if (DuelManager.isDueling) {
 			Player player = e.getPlayer();
 			if (player == DuelManager.challenger1 || player == DuelManager.challenger2) {
-				Runnable runnable = new Runnable() {
-				    @Override
-				    public void run() {
-				        try {
-				        	Thread.sleep(100);
-				        	DuelManager.FinishDuel(player);			      		        
-				        } catch (InterruptedException e) {
-				            e.printStackTrace();
-				        }
-				    }
-				};
-				Thread t = new Thread(runnable);
-				t.start();
+				if (player == DuelManager.challenger1) {
+					e.setRespawnLocation(DuelManager.prevPos1);
+					DuelManager.FinishDuel(player);	
+				}
+				else if (player == DuelManager.challenger2) {
+					e.setRespawnLocation(DuelManager.prevPos2);
+					DuelManager.FinishDuel(player);	
+				}	
 			}
 		}
     }

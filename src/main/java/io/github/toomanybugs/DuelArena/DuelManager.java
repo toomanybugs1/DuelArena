@@ -22,6 +22,7 @@ public class DuelManager {
 	
 	public static ItemStack[] items1, items2;
 	public static ItemStack[] armor1, armor2;
+	public static float xp1, xp2;
 	
 	//how long do challenge requests last? (in seconds)
 	private static int challengeLifeTime = 10;
@@ -55,6 +56,8 @@ public class DuelManager {
 	            		challenger2.sendMessage("You did not accept the challenge.");
 	            		
 	            		challenger1 = challenger2 = null;
+	            		
+	            		isDueling = false;
 	            	}		        
 		        } catch (InterruptedException e) {
 		            e.printStackTrace();
@@ -105,11 +108,9 @@ public class DuelManager {
 	
 	public static void FinishDuel(Player loser) {
 		if (loser == challenger1) {
-			challenger1.teleport(prevPos1);
 			RestoreInventory(challenger1);
 		}
 		else {
-			challenger2.teleport(prevPos2);
 			RestoreInventory(challenger2);
 		}
 		
@@ -170,38 +171,49 @@ public class DuelManager {
 			ClearInventory(challenger1);
 			challenger1.getInventory().setContents(items1);
 			challenger1.getInventory().setArmorContents(armor1);
+			challenger1.setExp(xp1);
 		}
 		
 		else if (challenger == challenger2) {
 			ClearInventory(challenger2);
 			challenger2.getInventory().setContents(items2);
 			challenger2.getInventory().setArmorContents(armor2);
+			challenger2.setExp(xp2);
 		}
 	}
 	
 	private static void GetInventories() {
 		items1 = challenger1.getInventory().getContents();
 		armor1 = challenger1.getInventory().getArmorContents();
+		xp1 = challenger1.getExp();
 		
 		items2 = challenger2.getInventory().getContents();
 		armor2 = challenger2.getInventory().getArmorContents();
+		xp2 = challenger2.getExp();
 	}
 	
 	private static void GiveItemsFromConfig() {
 		List<String> itemStrings = plugin.getConfig().getStringList("items");
-		List<String> armorStrings = plugin.getConfig().getStringList("armor");
+		String helmetString = plugin.getConfig().getString("helmet");
+		String chestPlateString = plugin.getConfig().getString("chestplate");
+		String leggingsString = plugin.getConfig().getString("leggings");
+		String bootsString = plugin.getConfig().getString("boots");
 		
 		ItemStack[] items = new ItemStack[itemStrings.size()];
-		ItemStack[] armor = new ItemStack[armorStrings.size()];
+		ItemStack[] armor = {
+				new ItemStack(Material.matchMaterial(bootsString), 1),
+				new ItemStack(Material.matchMaterial(leggingsString), 1),
+				new ItemStack(Material.matchMaterial(chestPlateString), 1),
+				new ItemStack(Material.matchMaterial(helmetString), 1)
+		};
 		
 		for (int i = 0; i < items.length; i++) {
-			Material m = Material.matchMaterial(itemStrings.get(i));
-			items[i] = new ItemStack(m, 1);
-		}
-		
-		for (int i = 0; i < armor.length; i++) {
-			Material m = Material.matchMaterial(armorStrings.get(i));
-			armor[i] = new ItemStack(m, 1);
+			String[] lineParts = itemStrings.get(i).split(" ");
+			if (lineParts.length != 2)
+				continue;
+			
+			Material m = Material.matchMaterial(lineParts[0]);
+			items[i] = new ItemStack(m, Integer.parseInt(lineParts[1]));
 		}
 		
 		challenger1.getInventory().setContents(items);
