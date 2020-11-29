@@ -1,11 +1,12 @@
 name: DuelArena
-main: DuelArena.DuelArena
+main: io.github.toomanybugs.DuelArena.DuelArena
 version: 0.0.1-SNAPSHOT
+api-version: 1.16
 author: toomanybugs
 commands:
    challenge:
       description: Challenge the player to a duel.
-      usage: /challenge [player]
+      usage: /challenge player
       permission: DuelArena.challenge
       permission-message: You don't have permission to challenge other players.
    accept:
@@ -17,4 +18,9 @@ commands:
       description: Decline a challenge from a player.
       usage: /decline
       permission: DualArena.challenge
-      permission: You don't have permission to decline challenges.
+      permission-message: You don't have permission to decline challenges.
+   duelpos:
+      description: Set positions for challengers to appear when the duel starts.
+      usage: /duelpos 1
+      permission: DuelArena.admin
+      permission-message: You don't have permission to change the duel positions.

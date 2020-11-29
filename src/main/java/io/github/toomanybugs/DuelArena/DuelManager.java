@@ -21,6 +21,9 @@ public class DuelManager {
 	public static void StartDuel() {
 		isDueling = true;
 		
+		prevPos1 = challenger1.getLocation();
+		prevPos2 = challenger2.getLocation();
+		
 		challenger1.teleport(pos1);
 		challenger2.teleport(pos2);
 		
@@ -55,7 +58,49 @@ public class DuelManager {
 		else 
 			Bukkit.broadcastMessage(challenger1.getDisplayName() + " has defeated " + challenger2.getDisplayName() + " in a duel!");
 		
+		challenger1.teleport(prevPos1);
+		challenger2.teleport(prevPos2);
+		
 		challenger1 = challenger2 = null;
 		isDueling = false;
+	}
+	
+	public static void SetDuelPosition(int posNum, Location loc) {
+		if (posNum == 1) {
+			pos1 = loc;
+			plugin.getConfig().set("pos1.x", loc.getX());
+			plugin.getConfig().set("pos1.y", loc.getY());
+			plugin.getConfig().set("pos1.z", loc.getZ());
+			plugin.getConfig().set("pos1.pitch", loc.getPitch());
+			plugin.getConfig().set("pos1.yaw", loc.getYaw());
+		}
+		else if (posNum == 2) {
+			pos2 = loc;
+			plugin.getConfig().set("pos2.x", loc.getX());
+			plugin.getConfig().set("pos2.y", loc.getY());
+			plugin.getConfig().set("pos2.z", loc.getZ());
+			plugin.getConfig().set("pos2.pitch", loc.getPitch());
+			plugin.getConfig().set("pos2.yaw", loc.getYaw());
+		}
+		
+		plugin.saveConfig();
+	}
+	
+	public static void LoadPositionsFromConfig() {
+		pos1 = new Location(
+				Bukkit.getWorld("world"),
+				plugin.getConfig().getDouble("pos1.x"),
+				plugin.getConfig().getDouble("pos1.y"),
+				plugin.getConfig().getDouble("pos1.z"),
+				(float) plugin.getConfig().getDouble("pos1.pitch"),
+				(float) plugin.getConfig().getDouble("pos1.yaw"));
+		
+		pos2 = new Location(
+				Bukkit.getWorld("world"),
+				plugin.getConfig().getDouble("pos2.x"),
+				plugin.getConfig().getDouble("pos2.y"),
+				plugin.getConfig().getDouble("pos2.z"),
+				(float) plugin.getConfig().getDouble("pos2.pitch"),
+				(float) plugin.getConfig().getDouble("pos2.yaw"));
 	}
 }
