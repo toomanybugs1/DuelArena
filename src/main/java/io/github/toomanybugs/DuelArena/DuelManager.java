@@ -1,8 +1,13 @@
 package io.github.toomanybugs.DuelArena;
 
+import java.util.List;
+
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public class DuelManager {
 	
@@ -14,6 +19,9 @@ public class DuelManager {
 	
 	public static Location pos1, pos2;
 	public static Location prevPos1, prevPos2;
+	
+	public static ItemStack[] items1, items2;
+	public static ItemStack[] armor1, armor2;
 	
 	//how long do challenge requests last? (in seconds)
 	private static int challengeLifeTime = 10;
@@ -27,39 +35,83 @@ public class DuelManager {
 		challenger1.teleport(pos1);
 		challenger2.teleport(pos2);
 		
+		GetInventories();
+		ClearInventory(challenger1);
+		ClearInventory(challenger2);
+		GiveItemsFromConfig();
+		
 		StartDuelCountDown();
 	}
 	
 	public static void StartChallengeTimer() {
-		plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, new Runnable() {
-            public void run() {
-            	if (!isDueling) {
-            		challenger1.sendMessage("Your challenge was not accepted.");
-            		challenger2.sendMessage("You did not accept the challenge.");
-            		
-            		challenger1 = challenger2 = null;
-            	}
-            }
-        }, 0, 20 * challengeLifeTime);
+		Runnable runnable = new Runnable() {
+		    @Override
+		    public void run() {
+		        try {
+		        	Thread.sleep(challengeLifeTime * 1000);
+		        	
+		            if (!isDueling) {
+	            		challenger1.sendMessage("Your challenge was not accepted.");
+	            		challenger2.sendMessage("You did not accept the challenge.");
+	            		
+	            		challenger1 = challenger2 = null;
+	            	}		        
+		        } catch (InterruptedException e) {
+		            e.printStackTrace();
+		        }
+		    }
+		};
+		Thread t = new Thread(runnable);
+		t.start();
 	}
 	
 	public static void StartDuelCountDown() {
 		isHoldingBeforeDuel = true;
-		// TODO: count down 5 seconds while holding the combatants in place
-		isHoldingBeforeDuel = false;
 		
-		challenger1.sendTitle("Fight!", "", 10, 50, 10);
-		challenger2.sendTitle("Fight!", "", 10, 50, 10);
+		CountdownTimer timer = new CountdownTimer(plugin,
+		        5,
+		        () -> {
+		        	challenger1.sendTitle(ChatColor.RED + "Get Ready", "", 5, 10, 5);
+		        	challenger2.sendTitle(ChatColor.RED + "Get Ready", "", 5, 10, 5);
+		        },
+		        () -> {
+		        	isHoldingBeforeDuel = false;
+	        		
+	        		challenger1.sendTitle(ChatColor.RED + "Fight!", "", 10, 50, 10);
+	        		challenger2.sendTitle(ChatColor.RED + "Fight!", "", 10, 50, 10);
+		        },
+		        (t) -> {
+		        	challenger1.sendTitle(ChatColor.RED + "" + t.getSecondsLeft(), "", 5, 10, 5);
+		        	challenger2.sendTitle(ChatColor.RED + "" + t.getSecondsLeft(), "", 5, 10, 5);
+		        }
+
+		);
+
+		timer.scheduleTimer();
+	}
+	
+	public static void AnnounceWinner(Player loser) {
+		if (loser == challenger1) {
+			Bukkit.broadcastMessage(challenger2.getDisplayName() + " has defeated " + challenger1.getDisplayName() + " in a duel!");
+			challenger2.teleport(prevPos2);
+			RestoreInventory(challenger2);
+		}
+		else {
+			Bukkit.broadcastMessage(challenger1.getDisplayName() + " has defeated " + challenger2.getDisplayName() + " in a duel!");
+			challenger1.teleport(prevPos1);
+			RestoreInventory(challenger1);
+		}
 	}
 	
 	public static void FinishDuel(Player loser) {
-		if (loser == challenger1)
-			Bukkit.broadcastMessage(challenger2.getDisplayName() + " has defeated " + challenger1.getDisplayName() + " in a duel!");
-		else 
-			Bukkit.broadcastMessage(challenger1.getDisplayName() + " has defeated " + challenger2.getDisplayName() + " in a duel!");
-		
-		challenger1.teleport(prevPos1);
-		challenger2.teleport(prevPos2);
+		if (loser == challenger1) {
+			challenger1.teleport(prevPos1);
+			RestoreInventory(challenger1);
+		}
+		else {
+			challenger2.teleport(prevPos2);
+			RestoreInventory(challenger2);
+		}
 		
 		challenger1 = challenger2 = null;
 		isDueling = false;
@@ -92,15 +144,70 @@ public class DuelManager {
 				plugin.getConfig().getDouble("pos1.x"),
 				plugin.getConfig().getDouble("pos1.y"),
 				plugin.getConfig().getDouble("pos1.z"),
-				(float) plugin.getConfig().getDouble("pos1.pitch"),
-				(float) plugin.getConfig().getDouble("pos1.yaw"));
+				(float) plugin.getConfig().getDouble("pos1.yaw"),
+				(float) plugin.getConfig().getDouble("pos1.pitch"));
 		
 		pos2 = new Location(
 				Bukkit.getWorld("world"),
 				plugin.getConfig().getDouble("pos2.x"),
 				plugin.getConfig().getDouble("pos2.y"),
 				plugin.getConfig().getDouble("pos2.z"),
-				(float) plugin.getConfig().getDouble("pos2.pitch"),
-				(float) plugin.getConfig().getDouble("pos2.yaw"));
+				(float) plugin.getConfig().getDouble("pos2.yaw"),
+				(float) plugin.getConfig().getDouble("pos2.pitch"));
+	}
+	
+	private static void ClearInventory(Player challenger) {
+		challenger.getInventory().clear();
+		challenger.getInventory().setHelmet(null);
+		challenger.getInventory().setChestplate(null);
+		challenger.getInventory().setLeggings(null);
+		challenger.getInventory().setBoots(null);
+	}
+	
+	// we must specify because one will be after respawn
+	private static void RestoreInventory(Player challenger) {
+		if (challenger == challenger1) {
+			ClearInventory(challenger1);
+			challenger1.getInventory().setContents(items1);
+			challenger1.getInventory().setArmorContents(armor1);
+		}
+		
+		else if (challenger == challenger2) {
+			ClearInventory(challenger2);
+			challenger2.getInventory().setContents(items2);
+			challenger2.getInventory().setArmorContents(armor2);
+		}
+	}
+	
+	private static void GetInventories() {
+		items1 = challenger1.getInventory().getContents();
+		armor1 = challenger1.getInventory().getArmorContents();
+		
+		items2 = challenger2.getInventory().getContents();
+		armor2 = challenger2.getInventory().getArmorContents();
+	}
+	
+	private static void GiveItemsFromConfig() {
+		List<String> itemStrings = plugin.getConfig().getStringList("items");
+		List<String> armorStrings = plugin.getConfig().getStringList("armor");
+		
+		ItemStack[] items = new ItemStack[itemStrings.size()];
+		ItemStack[] armor = new ItemStack[armorStrings.size()];
+		
+		for (int i = 0; i < items.length; i++) {
+			Material m = Material.matchMaterial(itemStrings.get(i));
+			items[i] = new ItemStack(m, 1);
+		}
+		
+		for (int i = 0; i < armor.length; i++) {
+			Material m = Material.matchMaterial(armorStrings.get(i));
+			armor[i] = new ItemStack(m, 1);
+		}
+		
+		challenger1.getInventory().setContents(items);
+		challenger1.getInventory().setArmorContents(armor);
+		
+		challenger2.getInventory().setContents(items);
+		challenger2.getInventory().setArmorContents(armor);
 	}
 }

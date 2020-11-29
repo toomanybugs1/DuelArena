@@ -19,6 +19,8 @@ public final class DuelArena extends JavaPlugin {
         DuelManager.plugin = this;
         this.saveDefaultConfig();
         DuelManager.LoadPositionsFromConfig();
+        
+        getLogger().info("DuelManager has been initialized.");
     }
     
     @Override
@@ -52,6 +54,9 @@ public final class DuelArena extends JavaPlugin {
     			return true;
     		}
     		
+    		DuelManager.challenger1 = (Player) sender;
+    		DuelManager.challenger2 = challengedPlayer;
+    		
     		DuelManager.challenger1.sendMessage(ChatColor.GOLD + "You have challenged " + args[0] + " to a duel!");
     		DuelManager.challenger2.sendMessage(ChatColor.GOLD + DuelManager.challenger1.getDisplayName() + " has challenged you to a duel. Type /accept or /decline to respond!");
     		
@@ -80,6 +85,8 @@ public final class DuelArena extends JavaPlugin {
     		
     		player.sendMessage(ChatColor.GREEN + "You have accepted the challenge!");
     		DuelManager.challenger1.sendMessage(ChatColor.GREEN + player.getDisplayName() + " has accepted your challenge!");
+    		
+    		DuelManager.StartDuel();
     		
     		return true;
 		}

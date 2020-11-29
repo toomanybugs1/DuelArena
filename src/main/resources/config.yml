@@ -11,3 +11,11 @@ pos2:
    z: 0
    pitch: 0
    yaw: 0
+   
+items:
+   - iron_sword
+   - cooked_beef
+   
+armor:
+   - iron_chestplate
+   - iron_helmet
