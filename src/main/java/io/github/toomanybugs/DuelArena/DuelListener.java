@@ -15,8 +15,11 @@ public final class DuelListener implements Listener {
         	if (DuelManager.isDueling) {
         		Player player = e.getEntity();
         		
-        		if (player == DuelManager.challenger1 || player == DuelManager.challenger2) 
+        		if (player == DuelManager.challenger1 || player == DuelManager.challenger2) {
+        			e.setKeepLevel(true);
         			DuelManager.AnnounceWinner(player);
+        		}
+        		
         	}
         }
     }

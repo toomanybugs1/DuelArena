@@ -22,7 +22,7 @@ public class DuelManager {
 	
 	public static ItemStack[] items1, items2;
 	public static ItemStack[] armor1, armor2;
-	public static float xp1, xp2;
+	public static int xp1, xp2;
 	
 	//how long do challenge requests last? (in seconds)
 	private static int challengeLifeTime = 10;
@@ -171,25 +171,25 @@ public class DuelManager {
 			ClearInventory(challenger1);
 			challenger1.getInventory().setContents(items1);
 			challenger1.getInventory().setArmorContents(armor1);
-			SetXPTimer(challenger1, xp1);
+			challenger1.setTotalExperience(xp1);
 		}
 		
 		else if (challenger == challenger2) {
 			ClearInventory(challenger2);
 			challenger2.getInventory().setContents(items2);
 			challenger2.getInventory().setArmorContents(armor2);
-			SetXPTimer(challenger2, xp2);
+			challenger2.setTotalExperience(xp2);
 		}
 	}
 	
 	private static void GetInventories() {
 		items1 = challenger1.getInventory().getContents();
 		armor1 = challenger1.getInventory().getArmorContents();
-		xp1 = challenger1.getExp();
+		xp1 = challenger1.getTotalExperience();
 		
 		items2 = challenger2.getInventory().getContents();
 		armor2 = challenger2.getInventory().getArmorContents();
-		xp2 = challenger2.getExp();
+		xp2 = challenger2.getTotalExperience();
 	}
 	
 	private static void GiveItemsFromConfig() {
@@ -221,22 +221,5 @@ public class DuelManager {
 		
 		challenger2.getInventory().setContents(items);
 		challenger2.getInventory().setArmorContents(armor);
-	}
-	
-	private static void SetXPTimer(Player challenger, float xp) {
-		Runnable runnable = new Runnable() {
-		    @Override
-		    public void run() {
-		        try {
-		        	Thread.sleep(100);
-		        	challenger.setExp(xp);
-	            			        
-		        } catch (InterruptedException e) {
-		            e.printStackTrace();
-		        }
-		    }
-		};
-		Thread t = new Thread(runnable);
-		t.start();
 	}
 }
