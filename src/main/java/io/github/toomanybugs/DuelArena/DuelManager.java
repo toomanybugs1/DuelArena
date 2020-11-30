@@ -171,14 +171,14 @@ public class DuelManager {
 			ClearInventory(challenger1);
 			challenger1.getInventory().setContents(items1);
 			challenger1.getInventory().setArmorContents(armor1);
-			challenger1.setExp(xp1);
+			SetXPTimer(challenger1, xp1);
 		}
 		
 		else if (challenger == challenger2) {
 			ClearInventory(challenger2);
 			challenger2.getInventory().setContents(items2);
 			challenger2.getInventory().setArmorContents(armor2);
-			challenger2.setExp(xp2);
+			SetXPTimer(challenger2, xp2);
 		}
 	}
 	
@@ -221,5 +221,22 @@ public class DuelManager {
 		
 		challenger2.getInventory().setContents(items);
 		challenger2.getInventory().setArmorContents(armor);
+	}
+	
+	private static void SetXPTimer(Player challenger, float xp) {
+		Runnable runnable = new Runnable() {
+		    @Override
+		    public void run() {
+		        try {
+		        	Thread.sleep(100);
+		        	challenger.setExp(xp);
+	            			        
+		        } catch (InterruptedException e) {
+		            e.printStackTrace();
+		        }
+		    }
+		};
+		Thread t = new Thread(runnable);
+		t.start();
 	}
 }
